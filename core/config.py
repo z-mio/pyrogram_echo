@@ -1,10 +1,9 @@
 import os
 from pathlib import Path
-from typing import Annotated
 from urllib.parse import urlparse
 
 from pydantic import Field, field_validator
-from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class WatchdogSettings(BaseSettings):
@@ -52,8 +51,6 @@ class BotSettings(BaseSettings):
         extra="ignore",
     )
 
-    admins: Annotated[list[int], NoDecode]
-    """管理员 ID 列表"""
     bot_token: str
     api_id: str
     api_hash: str
@@ -64,17 +61,6 @@ class BotSettings(BaseSettings):
     def model_post_init(self, __context) -> None:
         """模型初始化后的操作"""
         self.bot_workdir.mkdir(parents=True, exist_ok=True)
-
-    @field_validator("admins", mode="before")
-    @classmethod
-    def parse_admins(cls, v):
-        if isinstance(v, list):
-            return [int(x) if not isinstance(x, int) else x for x in v]
-        if isinstance(v, int):
-            return [v]
-        if isinstance(v, str):
-            return [int(x.strip()) for x in v.replace(" ", "").split(",") if x.strip()]
-        return v
 
     @field_validator("bot_proxy", mode="before")
     @classmethod
