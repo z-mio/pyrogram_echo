@@ -45,10 +45,21 @@ async def echo_guest(cli: Client, msg: Message) -> None:
     """处理访客消息事件"""
     if getattr(msg, "reply_to_message", None):
         msg.reply_to_message = None
-    await cli.answer_guest_query(
-        guest_query_id=msg.guest_query_id,
-        result=InlineQueryResultArticle("title", InputTextMessageContent(f"{format_as_blockquote(msg)}\n**message**")),
-    )
+    try:
+        await cli.answer_guest_query(
+            guest_query_id=msg.guest_query_id,
+            result=InlineQueryResultArticle(
+                "title", InputTextMessageContent(f"{format_as_blockquote(msg)}\n**message**")
+            ),
+        )
+    except MessageTooLong:
+        msg.from_user = None
+        await cli.answer_guest_query(
+            guest_query_id=msg.guest_query_id,
+            result=InlineQueryResultArticle(
+                "title", InputTextMessageContent(f"{format_as_blockquote(msg)}\n**message**")
+            ),
+        )
 
 
 @Client.on_raw_update(group=1)
