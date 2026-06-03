@@ -43,6 +43,8 @@ async def echo(cli: Client, msg: Message | ChatMemberUpdated, prefix_text: str =
 @Client.on_guest_message()
 async def echo_guest(cli: Client, msg: Message) -> None:
     """处理访客消息事件"""
+    if getattr(msg, "reply_to_message", None):
+        msg.reply_to_message = None
     await cli.answer_guest_query(
         guest_query_id=msg.guest_query_id,
         result=InlineQueryResultArticle("title", InputTextMessageContent(f"{format_as_blockquote(msg)}\n**message**")),
