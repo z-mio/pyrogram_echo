@@ -7,7 +7,14 @@ from pyrogram.raw.types import (
     UpdateBotMessageReaction,
     UpdateChannelMessageViews,
 )
-from pyrogram.types import ChatMemberUpdated, Message, Object, ReplyParameters
+from pyrogram.types import (
+    ChatMemberUpdated,
+    InlineQueryResultArticle,
+    InputTextMessageContent,
+    Message,
+    Object,
+    ReplyParameters,
+)
 
 
 @Client.on_message()
@@ -31,6 +38,15 @@ async def echo(cli: Client, msg: Message | ChatMemberUpdated, prefix_text: str =
         await _send_formatted_message(cli, chat_id, message_id, prefix_text, "message", message)
     except MessageTooLong:
         await _handle_long_message(cli, chat_id, message_id, prefix_text, message)
+
+
+@Client.on_guest_message()
+async def echo_guest(cli: Client, msg: Message) -> None:
+    """处理访客消息事件"""
+    await cli.answer_guest_query(
+        guest_query_id=msg.guest_query_id,
+        result=InlineQueryResultArticle("title", InputTextMessageContent(f"{format_as_blockquote(msg)}\n**message**")),
+    )
 
 
 @Client.on_raw_update(group=1)
